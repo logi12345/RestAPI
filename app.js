@@ -66,20 +66,18 @@ app.get('/api/v1/employee/:id', (req, res) => {
     })
 })
 
-app.delete('/api/v1/employee/:id', (req, res) => {
+app.delete('/api/v1/employee/delete/:id', (req, res) => {
     const id = parseInt(req.params.id, 10);
-    let i=0;
-    db.foreach((employee) => {
-            if (employee.id === id) {
-                db.splice(i, 1);
+    for (let index = 0; index < db.length; index++){
+            if (db[index].id === id) {
+                db.splice(index, 1);
                 return res.status(200).send({
                     success: 'true',
                     message: 'Employee deleted successful',
                 })
 
             }
-            ++i;
-    })
+    }
     return res.status(404).send({
         success:'false',
         message: 'Employee not found'
@@ -87,6 +85,45 @@ app.delete('/api/v1/employee/:id', (req, res) => {
     })
 });
 
+app.put('/api/v1/employee/update/:id', (req,res)=>{
+    const id = parseInt(req.params.id, 10);
+    console.log(id);
+    let found;
+    let index;
+    for (let i = 0; i < db.length; i++) {
+        if(db[i].id === id){
+            found = db[i];
+            index = i;
+        } 
+    }
+    console.log(found);
+    if(!found){
+        return res.status(404).send({
+            success:'false',
+            message: 'Employee not found'
+        })
+    }
+    if(!req.body.name && !req.body.role){
+        return res.status(404).send({
+            success:'false',
+            message: 'Nothing to update'
+        })
+    }
+
+    const employeeToUpdate = {
+        id: found.id,
+        name: req.body.name ? req.body.name : found.name,
+        role: req.body.role ? req.body.role : found.role,
+    }
+
+    db.splice(index, 1, employeeToUpdate)
+    return res.status(201).send({
+        success: 'true',
+        message: 'employee updated successfully',
+        employeeToUpdate
+    })
+
+})
 
 const PORT = 5000;
 app.listen(PORT, () => {
