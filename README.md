@@ -45,5 +45,26 @@ npm install --save-dev nodemon
 ```
 nodemon  app.js
 ```
+## How to use the application
 
+Once the server is running(default port 5000) use postman to test HTTPS requests.
+
+Available requests:
+```
+GET 
+(All employees)
+https://localhost:5000/api/v1/employees
+
+(Single employee)
+https://localhost:5000/api/v1/employee/{id}
+
+PUT
+https://localhost:5000/api/v1/employee/update/{id}
+
+POST
+https://localhost:5000/api/v1/create
+
+DELETE
+https://localhost:5000/api/v1/employee/delete/{id}
+```
 
