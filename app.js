@@ -1,6 +1,13 @@
 const express = require('express');
-const db = require('./db/db');
 const bodyParser = require('body-parser');
+//listener for connecting to server
+const PORT = 5000;
+const mongodb =require('mongodb').MongoClient;
+const  util = require('util');
+const url = 'mongodb://127.0.0.1:27017'
+
+let collection;
+let employees;
 
 const SUCCESS = "true";
 const FAIL = "false";
@@ -14,6 +21,22 @@ app.use(bodyParser.urlencoded({
     extended: false
 }));
 
+mongodb.connect(url, {useNewUrlParser:true}, (err, client) => {
+    if (err) {
+      console.error(err)
+      return
+    }
+    app.listen(PORT, () => {
+        console.log("Conneceted to PORT " + PORT);
+    });
+    const db = client.db('company');
+    employees = db.collection('employees');
+
+    
+  })
+
+   
+
 //Setup response
 const responseText = (res, errorCode, isSuccessString, message, Result) =>{
     res.status(errorCode).send({
@@ -25,7 +48,12 @@ const responseText = (res, errorCode, isSuccessString, message, Result) =>{
 
 //Get all employees
 app.get('/api/v1/employees', (req, res) => {
-    responseText(res, 200, SUCCESS, 'Employees retrieved successfully',  db );
+   employees.find().toArray(function (err, result) {
+        if (err){ 
+            throw err
+        }
+        return  responseText(res, 200, SUCCESS, 'Employees retrieved successfully', result);
+      })
 });
 
 
@@ -39,16 +67,38 @@ app.post('/api/v1/create', (req, res) => {
     if (!req.body.role) {
         return responseText(res, 400, FAIL, 'Role is required');
     }
+
+    employees.find().toArray(function (err, result) {
+        if (err){ 
+            throw err
+        }
+        return  responseText(res, 200, SUCCESS, 'Employees retrieved successfully', result);
+      })
+
     //Post a successfully created employee.
-    let lastElementID = db[(db.length) - 1].id;
+    
+    let lastElementID = collection[(collection.length) - 1].id;
     const employee = {
         id: lastElementID + 1,
         name: req.body.name,
         role: req.body.role
     }
-    db.push(employee);
+    employees.insertOne(employee);
     return responseText(res, 200, SUCCESS, 'Employee Added successfully', employee);
 });
+
+const getEmployees = () =>{
+   let x = employees.find().toArray(function (err, result) {
+        if (err){ 
+            throw err
+        }
+        return  result;
+      }) 
+}
+
+const getCollectionLastIndex = (CallBack) =>{
+    return getEmployees();
+}
 
 //Retireve a single employee
 app.get('/api/v1/employee/:id', (req, res) => {
@@ -112,9 +162,3 @@ app.put('/api/v1/employee/update/:id', (req, res) => {
     db.splice(index, 1, employeeToUpdate)
     return responseText(res, 200, SUCCESS, 'Employee updated successfully', employeeToUpdate);
 })
-
-//listener for connecting to server
-const PORT = 5000;
-app.listen(PORT, () => {
-    console.log("Conneceted to PORT " + PORT);
-});
