@@ -38,7 +38,7 @@ app.post('/api/v1/create', (req, res) => {
     }
     //Check the role field is not blank
     if (!req.body.role) {
-        return esponseText(res, 400, FAIL, 'Role is required');
+        return responseText(res, 400, FAIL, 'Role is required');
     }
     //Post a successfully created employee.
     let lastElementID = db[(db.length) - 1].id;
@@ -59,7 +59,7 @@ app.get('/api/v1/employee/:id', (req, res) => {
             return responseText(res, 200, SUCCESS, 'Employee retrieved successfully', employee);
         }
     })
-    return responseText(res, 404, FAIL, 'Employee not found', employee);
+    return responseText(res, 404, FAIL, 'Employee not found');
 })
 
 //Delete an employee
@@ -67,18 +67,20 @@ app.delete('/api/v1/employee/delete/:id', (req, res) => {
     const id = parseInt(req.params.id, 10);
     for (let index = 0; index < db.length; index++) {
         if (db[index].id === id) {
+            const deletedEmployee = db[index]
             db.splice(index, 1);
-            return responseText(res, 200, SUCCESS, 'Employee deleted successfully', employee);
+            
+            return responseText(res, 200, SUCCESS, 'Employee deleted successfully', deletedEmployee);
         }
     }
-    return responseText(res, 404, FAIL, 'Employee not found', employee);
+    return responseText(res, 404, FAIL, 'Employee not found');
 });
 
 
 //Update an employee record
 app.put('/api/v1/employee/update/:id', (req, res) => {
     const id = parseInt(req.params.id, 10);
-    console.log(id);
+    
     let found;//Record to update
     let index;//position in store
 
