@@ -2,7 +2,6 @@ const express = require('express');
 const db = require('./db/db');
 const bodyParser = require('body-parser');
 
-
 const SUCCESS = "true";
 const FAIL = "false";
 
