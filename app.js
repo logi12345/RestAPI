@@ -1,5 +1,5 @@
 const express = require('express');
-const db = require('./db/db');
+const db = require('./db/db.json');
 const bodyParser = require('body-parser');
 
 const SUCCESS = "true";
@@ -14,72 +14,91 @@ app.use(bodyParser.urlencoded({
     extended: false
 }));
 
-//Setup response
-const responseText = (res, errorCode, isSuccessString, message, Result) =>{
-    res.status(errorCode).send({
-        success: isSuccessString,
-        messsage: message,
-        Result
-    })
-}
-
 //Get all employees
 app.get('/api/v1/employees', (req, res) => {
-    responseText(res, 200, SUCCESS, 'Employees retrieved successfully',  db );
+    return db;
 });
 
 
+const handleError =(req) =>{
+    if(db.length==0){
+        return false
+    }
+    if (!req.body.employee_name) {
+        return true;
+    }
+    //Check the salary field is not blank
+    if (!req.body.employee_salary) {
+        return true;
+    }
+
+    if (!req.body.employee_age) {
+        return true;
+    }
+
+    if (!req.body.profile_image){
+        return true;
+    }
+    return false;
+}
+
 //Posting a new employee
 app.post('/api/v1/create', (req, res) => {
-    //Check the name field is not blank
-    if (!req.body.name) {
-        return responseText(res, 400, FAIL, 'Name is required');
-    }
-    //Check the role field is not blank
-    if (!req.body.role) {
-        return responseText(res, 400, FAIL, 'Role is required');
+    //handle errors
+    if (handleError(req)){
+        return false;
     }
     //Post a successfully created employee.
-    let lastElementID = db[(db.length) - 1].id;
+    let lastElementID = db.length ===0 ? 0 : db[db.length - 1].id;
     const employee = {
         id: lastElementID + 1,
-        name: req.body.name,
-        role: req.body.role
+        employee_name: req.body.employee_name,
+        employee_salary: req.body.employee_salary,
+        employee_age: req.body.employee_age
     }
     db.push(employee);
-    return responseText(res, 200, SUCCESS, 'Employee Added successfully', employee);
+    return  employee;
 });
 
 //Retireve a single employee
 app.get('/api/v1/employee/:id', (req, res) => {
     const id = parseInt(req.params.id, 10);
+    if(db.length ==0){
+        return false;
+    }
     db.forEach((employee) => {
         if (employee.id === id) {
-            return responseText(res, 200, SUCCESS, 'Employee retrieved successfully', employee);
+            return employee;
         }
     })
-    return responseText(res, 404, FAIL, 'Employee not found');
+    return false;
 })
 
 //Delete an employee
-app.delete('/api/v1/employee/delete/:id', (req, res) => {
+app.delete('/api/v1/delete/:id', (req, res) => {
+    if(db.length ==0){
+        return false;
+    }
     const id = parseInt(req.params.id, 10);
     for (let index = 0; index < db.length; index++) {
         if (db[index].id === id) {
             const deletedEmployee = db[index]
             db.splice(index, 1);
             
-            return responseText(res, 200, SUCCESS, 'Employee deleted successfully', deletedEmployee);
+           return deletedEmployee;
         }
     }
-    return responseText(res, 404, FAIL, 'Employee not found');
+    return false;
 });
 
 
 //Update an employee record
-app.put('/api/v1/employee/update/:id', (req, res) => {
+app.put('/api/v1/update/:id', (req, res) => {
     const id = parseInt(req.params.id, 10);
     
+    if(db.length ==0){
+        return false;
+    }
     let found;//Record to update
     let index;//position in store
 
@@ -96,17 +115,18 @@ app.put('/api/v1/employee/update/:id', (req, res) => {
     
     //Return a response for invalid id
     if (!found) {
-        return responseText(res, 404, FAIL, 'Employee not found');
+        return false;
     }
-    if (!req.body.name && !req.body.role) {
-        return responseText(res, 400, FAIL, 'Nothing to update');
+    if (!req.body.employee_name && !req.body.employee_salary, !req.body.employee_age) {
+        return false;
     }
 
     //update employee
     const employeeToUpdate = {
         id: found.id,
-        name: req.body.name ? req.body.name : found.name,
-        role: req.body.role ? req.body.role : found.role,
+        employee_name: req.body.employee_name ? req.body.employee_name : found.employee_name,
+        employee_salary: req.body.employee_salary ? req.body.employee_salary : found.employee_salary,
+        employee_age: req.body.employee_age ? req.body.employee_age: found.employee_age
     }
 
     db.splice(index, 1, employeeToUpdate)
@@ -116,5 +136,5 @@ app.put('/api/v1/employee/update/:id', (req, res) => {
 //listener for connecting to server
 const PORT = 5000;
 app.listen(PORT, () => {
-    console.log("Conneceted to PORT " + PORT);
+    console.log("Connected to PORT " + PORT);
 });
