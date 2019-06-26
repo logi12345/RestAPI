@@ -8,6 +8,7 @@ const url = 'mongodb://127.0.0.1:27017'
 
 let collection;
 let employees;
+let employeesJSON;
 
 const SUCCESS = "true";
 const FAIL = "false";
@@ -31,8 +32,6 @@ mongodb.connect(url, {useNewUrlParser:true}, (err, client) => {
     });
     const db = client.db('company');
     employees = db.collection('employees');
-
-    
   })
 
    
@@ -52,10 +51,9 @@ app.get('/api/v1/employees', (req, res) => {
         if (err){ 
             throw err
         }
-        return  responseText(res, 200, SUCCESS, 'Employees retrieved successfully', result);
+            responseText(res, 200, SUCCESS, 'Employees retrieved successfully', result);
       })
 });
-
 
 //Posting a new employee
 app.post('/api/v1/create', (req, res) => {
@@ -68,78 +66,70 @@ app.post('/api/v1/create', (req, res) => {
         return responseText(res, 400, FAIL, 'Role is required');
     }
 
-    employees.find().toArray(function (err, result) {
+    
+    employees.find().toArray((err, result) => {
         if (err){ 
             throw err
         }
-        return  responseText(res, 200, SUCCESS, 'Employees retrieved successfully', result);
-      })
-
-    //Post a successfully created employee.
-    
-    let lastElementID = collection[(collection.length) - 1].id;
-    const employee = {
-        id: lastElementID + 1,
-        name: req.body.name,
-        role: req.body.role
-    }
-    employees.insertOne(employee);
-    return responseText(res, 200, SUCCESS, 'Employee Added successfully', employee);
+        //Post a successfully created employee.
+        
+        let lastElementID = result.length===0? 0:result[(result.length) - 1].id;
+        const employee = {
+                            id: lastElementID + 1,
+                            name: req.body.name,
+                            role: req.body.role
+                         }
+        employees.insertOne(employee);
+      return  responseText(res, 200, SUCCESS, 'Employee Added successfully', employee);
+    })
 });
 
-const getEmployees = () =>{
-   let x = employees.find().toArray(function (err, result) {
-        if (err){ 
-            throw err
-        }
-        return  result;
-      }) 
-}
-
-const getCollectionLastIndex = (CallBack) =>{
-    return getEmployees();
-}
 
 //Retireve a single employee
 app.get('/api/v1/employee/:id', (req, res) => {
     const id = parseInt(req.params.id, 10);
-    db.forEach((employee) => {
-        if (employee.id === id) {
-            return responseText(res, 200, SUCCESS, 'Employee retrieved successfully', employee);
+    employees.find().toArray((err, result) => {
+    for (let index = 0; index < result.length; index++) {
+        if (result[index].id === id) {
+            return responseText(res, 200, SUCCESS, 'Employee retrieved successfully', result[index]);
         }
-    })
+    }
     return responseText(res, 404, FAIL, 'Employee not found');
+})
 })
 
 //Delete an employee
 app.delete('/api/v1/employee/delete/:id', (req, res) => {
     const id = parseInt(req.params.id, 10);
-    for (let index = 0; index < db.length; index++) {
-        if (db[index].id === id) {
-            const deletedEmployee = db[index]
-            db.splice(index, 1);
+    employees.find().toArray((err, result) => {
+    for (let index = 0; index < result.length; index++) {
+        if (result[index].id === id) {
+            const deletedEmployee = result[index]
+            employees.deleteOne({id:id});
             
             return responseText(res, 200, SUCCESS, 'Employee deleted successfully', deletedEmployee);
         }
     }
     return responseText(res, 404, FAIL, 'Employee not found');
 });
+});
 
 
 //Update an employee record
 app.put('/api/v1/employee/update/:id', (req, res) => {
     const id = parseInt(req.params.id, 10);
-    
+    employees.find().toArray((err, result) =>{
     let found;//Record to update
     let index;//position in store
 
     //loop until matching ids found
     let i=0;
-    while (i < db.length){
-        if (db[i].id === id) {
-            found = db[i];
+    if (result.length === 0) return responseText(res, 404, FAIL, 'Employee not found');
+    while (i < result.length){
+        if (result[i].id === id) {
+            found = result[i];
             index = i;
-            i=db.length;
+            i=result.length;
         }
         ++i;
     }
@@ -158,7 +148,10 @@ app.put('/api/v1/employee/update/:id', (req, res) => {
         name: req.body.name ? req.body.name : found.name,
         role: req.body.role ? req.body.role : found.role,
     }
+    
+    employees.updateOne({id:id},{$set:{name: employeeToUpdate.name, role : employeeToUpdate.role}})
 
-    db.splice(index, 1, employeeToUpdate)
+    //result.splice(index, 1, employeeToUpdate)
     return responseText(res, 200, SUCCESS, 'Employee updated successfully', employeeToUpdate);
+})
 })
