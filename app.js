@@ -125,12 +125,12 @@ app.put('/api/v1/employee/update/:id', (req, res) => {
                     id: id
                 }, {
                     $set: {
-                        name: employeeToUpdate.name,
-                        role: employeeToUpdate.role
+                        name: req.body.name,
+                        role: req.body.role
                     }
                 }).then(() =>{
                     employees.findOne({id:id}).then((updatedEmployee) => {
-                        responseText(res, 200, SUCCESS, 'Employee updated successfully', employee);
+                        responseText(res, 200, SUCCESS, 'Employee updated successfully', updatedEmployee);
                     })                   
                 })
             }
