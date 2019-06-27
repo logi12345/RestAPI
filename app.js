@@ -9,7 +9,6 @@ const url = 'mongodb://127.0.0.1:27017/company';
 const Employee = require('./DatabaseSchema');
 
 // const connection = require('./DatabaseConnection');
-
 let db;
 let employees;
 
@@ -25,7 +24,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
     extended: false
 }));
-
 
 const messages =  {
     NOT_ALLOWED:{NOT_ALLOWED : "Method not allowed."},
@@ -74,50 +72,13 @@ app.get('/api/v2/employees', (req, res) => {
     })
 });
 
-
-
 //Posting a new employee
 app.post('/api/v2/create', (req, res) => {
-    //Check the name field is not blank
-
-    //let error = employee.validateSync();
-    // if (!req.body.name && !req.body.salary && !req.body.age) {
-    //     responseText(res, 400, FAIL, [messages.NAME_REQ, messages.SAL_REQ, messages.AGE_REQ], createEmployeeResponses(null, null))
-    //     return
-    // }
-    // //Check the role field is not blank
-    // if (!req.body.name && !req.body.salary) {
-    //     responseText(res, 400, FAIL, [messages.NAME_REQ, messages.SAL_REQ], createEmployeeResponses(null , null))
-    //     return
-    // }
-    // if (!req.body.name && !req.body.age) {
-    //     responseText(res, 400, FAIL, [messages.NAME_REQ, messages.AGE_REQ], createEmployeeResponses(null, null))
-    //     return
-    // }
-
-    // if (!req.body.age && !req.body.salary) {
-    //     responseText(res, 400, FAIL, [messages.AGE_REQ, messages.SAL_REQ], createEmployeeResponses(null, null))
-    //     return
-    // }
-    // if (!req.body.age) {
-    //     responseText(res, 400, FAIL, [messages.AGE_REQ], createEmployeeResponses(null, null))
-    //     return
-    // }
-    // if (!req.body.salary) {
-    //     responseText(res, 400, FAIL, [messages.SAL_REQ], createEmployeeResponses(null, null))
-    //     return
-    // }
-    // if (!req.body.name) {
-    //     responseText(res, 400, FAIL, [messages.NAME_REQ], createEmployeeResponses(null, null))
-    //     return
-    // }
     employees.find({}, (err, result) => {
         if (err) {
             throw err
         }
-
         let lastElementID = result.length === 0 ? 0 : parseInt(result[(result.length) - 1].id);
-
 
         const employee = new Employee({
             _id: lastElementID +1,
@@ -132,11 +93,10 @@ app.post('/api/v2/create', (req, res) => {
             responseText(res, 200, SUCCESS, [messages.EMP_CREATED], createEmployeeResponses(employee, null))
         }).catch((err) =>{
             //console.log(err)
-            responseText(res, 400, FAIL, err, createEmployeeResponses(employee, null))
+            responseText(res, 404, FAIL, err, createEmployeeResponses(employee, null))
          })
     })
 });
-
 
 //Retireve a single employee
 app.get('/api/v2/employee/:id', (req, res) => {
@@ -144,13 +104,12 @@ app.get('/api/v2/employee/:id', (req, res) => {
      employees.findOne({_id:id}).then(
         employee => {
             if(employee===null) {
-                responseText(res, 400, FAIL, [messages.EMP_NOT_FOUND], createEmployeeResponses(null, null))            }
+                responseText(res, 404, FAIL, [messages.EMP_NOT_FOUND], createEmployeeResponses(null, null))            }
             else{
                 responseText(res, 200, SUCCESS, [messages.EMP_FOUND], createEmployeeResponses(employee, null))
             }
         }
     )
-    
 })
 
 //Delete an employee
@@ -170,7 +129,6 @@ app.delete('/api/v2/employee/delete/:id', (req, res) => {
     )
 });
 
-
 //Update an employee record
 app.put('/api/v2/employee/update/:id', (req, res) => {
     const id = parseInt(req.params.id, 10);
@@ -178,7 +136,6 @@ app.put('/api/v2/employee/update/:id', (req, res) => {
         responseText(res, 400, FAIL, [messages.NOTH_UPDATE], createEmployeeResponses(null, null));
         return
     }
-
 
     employees.findOne({_id: id}, function(err, employee) {
         if(employee!==null) {
@@ -201,10 +158,10 @@ app.put('/api/v2/employee/update/:id', (req, res) => {
                 }
             ).catch((err) =>{
                 //console.log(err)
-                responseText(res, 400, FAIL, err, createEmployeeResponses(employee, null))
+                responseText(res, 404, FAIL, err, createEmployeeResponses(employee, null))
              })
         }else{
-            responseText(res, 400, FAIL, [messages.EMP_NOT_UPDATED], createEmployeeResponses(employee, null))
+            responseText(res, 404, FAIL, [messages.EMP_NOT_UPDATED], createEmployeeResponses(employee, null))
         }
     });
 })
