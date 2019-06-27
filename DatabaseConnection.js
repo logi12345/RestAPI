@@ -13,9 +13,7 @@ const url = 'mongodb://127.0.0.1:27017';
             console.error(err)
             return
         }
-        db = client.db(dbName);
-
-        
+        db = client.db(dbName);        
         callback(db)
     })
 }

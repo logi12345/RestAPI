@@ -17,38 +17,22 @@ const employees = mongoose.Schema({
    profile_image: String
 })
 
-module.exports = mongoose.model('employees', employees)
+employees.post('save', function(error, doc, next) {
+   console.log(error)
+   
+   let anArray = []
+   let messages =  Object.keys(error.errors);
+   for (let i=0; i<messages.length; ++i){
+     const x= {
+       ErrorMissingField:"The " + messages[i] + " is missing"
+      }
+      anArray.push(x)
+   }
 
-// db.createCollection( "employees", {
-//    validator: { $jsonSchema: {
-//       bsonType: "object",
-//       required: [ "employee_name", "employee_salary", "employee_age" ],
-//       properties: {
-//          _id: {
-//             bsonType: "int",
-//             description: "User id"
-//          },
-//          employee_name: {
-//             bsonType: "string",
-//             description: "must be a string and is required"
-//          },
-//          employee_role: {
-//             bsonType : "string",
-//             description: "position"
-//          },
-//          employee_salary: {
-//             bsonType: "double",
-//             description: "must be a string and is required"
-//          },
-//          employee_age: {
-//             bsonType: "int",
-//             description: "must be a string and is required"
-//          },
-//          profile_picture: {
-//             bsonType: "string",
-//             description: "must be a string and is required"
-//          }
-//       }
-//    }},
-//    validationAction: "error"
-// })
+   
+   console.log(messages);
+   next(anArray);
+ });
+ 
+
+module.exports = mongoose.model('employees', employees)
