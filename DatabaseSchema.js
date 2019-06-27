@@ -8,7 +8,7 @@ const employees = mongoose.Schema({
    },
    role: String,
    salary: {
-      type:mongoose.Decimal128,
+      type:Number,// type:mongoose.Decimal128,
       required: [true, 'salary required']
    },
    age: {type:Number,
