@@ -2,28 +2,12 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const mongodb = require('mongodb');
-const router = require('./Router/router');
+const router = require('./router');
 
 //internal modules
 const url = 'mongodb://127.0.0.1:27017/company';
-const Employee = require('./DatabaseSchema');
-const {
-    messages,
-    createEmployeeResponses,
-    responseText
-} = require('./ResponseHandler');
-
-
-// const connection = require('./DatabaseConnection');
 let db;
-let employees;
-
 const PORT = 5000;
-const SUCCESS = "ok";
-const FAIL = "error";
-
-//Initiialise express
 const app = express();
 
 //Setup body parser
@@ -32,122 +16,13 @@ app.use(bodyParser.urlencoded({
     extended: false
 }));
 
+//Database Connection
 mongoose.connect(url,{useNewUrlParser:true})
 db = mongoose.connection
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
-employees = Employee;
-
 app.use('/api/v2', router);
 
-//Get all employees
-// app.get('/api/v2/employees', (req, res) => {
-//     employees.find({},function (err, result) {
-//         if (err) {
-//             throw err
-//         }
-//         responseText(res, 200, SUCCESS, [messages.ER], createEmployeeResponses(null, result));
-//     })
-// });
-/*
-//Posting a new employee
-app.post('/api/v2/employees', (req, res) => {
-    employees.find({}, (err, result) => {
-        if (err) {
-            throw err
-        }
-        let lastElementID = result.length === 0 ? 0 : parseInt(result[(result.length) - 1].id);
-
-        const employee = new Employee({
-            _id: lastElementID +1,
-            name: req.body.name,
-            role: req.body.role ? req.body.role : "",
-            salary: req.body.salary,
-            age: req.body.age,
-            profile_image: req.body.profile_image ? req.body.profile_image : ""
-        })
-        employee.save().then(result=>{
-           // console.log(result);
-            responseText(res, 200, SUCCESS, [messages.EMP_CREATED], createEmployeeResponses(employee, null))
-        }).catch((err) =>{
-            //console.log(err)
-            responseText(res, 404, FAIL, err, createEmployeeResponses(employee, null))
-         })
-    })
-});
-
-//Retireve a single employee
-app.get('/api/v2/employee/:id', (req, res) => {
-    const id = parseInt(req.params.id, 10);
-     employees.findOne({_id:id}).then(
-        employee => {
-            if(employee===null) {
-                responseText(res, 404, FAIL, [messages.EMP_NOT_FOUND], createEmployeeResponses(null, null))            }
-            else{
-                responseText(res, 200, SUCCESS, [messages.EMP_FOUND], createEmployeeResponses(employee, null))
-            }
-        }
-    )
-})
-
-//Delete an employee
-app.delete('/api/v2/employee/delete/:id', (req, res) => {
-    const id = parseInt(req.params.id, 10);
-    employees.findOne({_id:id}).then(
-        employee => {
-            if(employee===null) {
-                responseText(res, 404, FAIL, [messages.EMP_NOT_FOUND], createEmployeeResponses(null, null));
-            }
-            else{
-                employees.deleteOne({_id:id}).then(() =>{
-                    responseText(res, 200, SUCCESS, [messages.EMP_DELETED], createEmployeeResponses(employee, null));  
-                })
-            }
-        }
-    )
-});
-
-//Update an employee record
-app.put('/api/v2/employee/:id', (req, res) => {
-    const id = parseInt(req.params.id, 10);
-    if (!req.body.name && !req.body.role && !req.body.salary && !req.body.age &&  !req.body.profile_imag) {
-        responseText(res, 400, FAIL, [messages.NOTH_UPDATE], createEmployeeResponses(null, null));
-        return
-    }
-
-    employees.findOne({_id: id}, function(err, employee) {
-        if(employee!==null) {
-
-            console.log(employee)
-                        employee.name =req.body.name ? req.body.name: "",
-                        employee.role= req.body.role ? req.body.role : "",
-                        employee.salary= req.body.salary ? req.body.salary : "",
-                        employee.age= req.body.age? req.body.age : "",
-                        employee.profile_image= req.body.profile_image ? req.body.profile_image : ""
-             
-            employee.save().then(
-                (result) =>{
-                    console.log(result)
-                    if(result){
-                        return responseText(res, 200, SUCCESS, [messages.EMP_UPDATED], createEmployeeResponses(result, null));
-                    }else{
-                        return responseText(res, 404, FAIL, [messages.EMP_NOT_FOUND], createEmployeeResponses(null, null));
-                    }
-                }
-            ).catch((err) =>{
-                //console.log(err)
-                responseText(res, 404, FAIL, err, createEmployeeResponses(employee, null))
-             })
-        }else{
-            responseText(res, 404, FAIL, [messages.EMP_NOT_UPDATED], createEmployeeResponses(employee, null))
-        }
-    });
-})
-
-app.all('/*', (req, res) => {
-    responseText(res, 405, FAIL, [messages.NOT_ALLOWED], createEmployeeResponses(null, null));
-})
-*/
 app.listen(PORT, () => {
     console.log("Connected to PORT " + PORT);
 });

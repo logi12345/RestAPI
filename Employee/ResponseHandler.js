@@ -1,6 +1,5 @@
 
-
-
+//Error Message Store
 const messages =  {
     NOT_ALLOWED:{NOT_ALLOWED : "Method not allowed."},
     SAL_REQ:{SAL_REQ : "Salary required"},
