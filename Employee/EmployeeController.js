@@ -1,12 +1,10 @@
 const Employee = require('./EmployeeSchema')
+//http request status
 const SUCCESS = "ok";
 const FAIL = "error";
 
-const {
-    messages,
-    createEmployeeResponses,
-    responseText
-} = require('./ResponseHandler');
+
+const { messages,createEmployeeResponses,responseText } = require('./ResponseHandler');
 employees = Employee;
 
 const getAllEmployees = (req, res) => {
@@ -42,38 +40,35 @@ const createNewEmployee = (req, res) => {
     })
 }
 
-const getSingleEmployee = (req, res) => {
-    const id = parseInt(req.params.id, 10);
-    employees.findOne({
-        _id: id
-    }).then(
-        employee => {
-            if (employee === null) {
-                responseText(res, 404, FAIL, [messages.EMP_NOT_FOUND], createEmployeeResponses(null, null))
-            } else {
-                responseText(res, 200, SUCCESS, [messages.EMP_FOUND], createEmployeeResponses(employee, null))
-            }
+const getSingleEmployee = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id, 10);
+        const employee = await employees.findOne({
+            _id: id
+        })
+
+        if (!employee) {
+            return responseText(res, 404, FAIL, [messages.EMP_NOT_FOUND], createEmployeeResponses(null, null))
         }
-    )
+        responseText(res, 200, SUCCESS, [messages.EMP_FOUND], createEmployeeResponses(employee, null))
+    } catch (error) {
+        responseText(res, 500, FAIL, [messages.UNEXPECTED_ERROR], createEmployeeResponses(null, null))
+    }
 }
 
-const deleteEmployee = (req, res) => {
+const deleteEmployee = async (req, res) => {
     const id = parseInt(req.params.id, 10);
-    employees.findOne({
+    const employee = await employees.findOne({
         _id: id
-    }).then(
-        employee => {
-            if (employee === null) {
-                responseText(res, 404, FAIL, [messages.EMP_NOT_FOUND], createEmployeeResponses(null, null));
-            } else {
-                employees.deleteOne({
-                    _id: id
-                }).then(() => {
-                    responseText(res, 200, SUCCESS, [messages.EMP_DELETED], createEmployeeResponses(employee, null));
-                })
-            }
-        }
-    )
+    })
+    if (employee === null) {
+        responseText(res, 404, FAIL, [messages.EMP_NOT_FOUND], createEmployeeResponses(null, null));
+    } else {
+        const employeeToDelete = await employees.deleteOne({
+            _id: id
+        })
+        responseText(res, 200, SUCCESS, [messages.EMP_DELETED], createEmployeeResponses(employee, null));
+    }
 }
 
 
@@ -89,10 +84,10 @@ const updateEmployee = (req, res) => {
         if (employee !== null) {
             console.log(employee)
             employee.name = req.body.name ? req.body.name : "",
-                employee.role = req.body.role ? req.body.role : "",
-                employee.salary = req.body.salary ? req.body.salary : "",
-                employee.age = req.body.age ? req.body.age : "",
-                employee.profile_image = req.body.profile_image ? req.body.profile_image : ""
+            employee.role = req.body.role ? req.body.role : "",
+            employee.salary = req.body.salary ? req.body.salary : "",
+            employee.age = req.body.age ? req.body.age : "",
+            employee.profile_image = req.body.profile_image ? req.body.profile_image : ""
             employee.save().then(
                 (result) => {
                     console.log(result)

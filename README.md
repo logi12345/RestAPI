@@ -51,20 +51,11 @@ Once the server is running(default port 5000) use postman to test HTTPS requests
 
 Available requests:
 ```
-GET 
+GET(All),POST
 (All employees)
 https://localhost:5000/api/v1/employees
 
-(Single employee)
+GET(Single employee),PUT,DELETE
 https://localhost:5000/api/v1/employee/{id}
-
-PUT
-https://localhost:5000/api/v1/employee/update/{id}
-
-POST
-https://localhost:5000/api/v1/create
-
-DELETE
-https://localhost:5000/api/v1/employee/delete/{id}
 ```
 

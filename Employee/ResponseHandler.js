@@ -1,6 +1,6 @@
 
 //Error Message Store
-const messages =  {
+const messages = Object.freeze({
     NOT_ALLOWED:{NOT_ALLOWED : "Method not allowed."},
     SAL_REQ:{SAL_REQ : "Salary required"},
     NAME_REQ:{NAME_REQ : "Name required"},
@@ -13,8 +13,9 @@ const messages =  {
     EMP_NOT_CREATED:{EMP_NOT_CREATED : "Employee not created"},
     EMP_NOT_UPDATED:{EMP_NOT_UPDATED : "Employee not updated"},
     EMP_RETRIEVED:{EMP_RETRIEVED :"Employee retrieved"},
-    NOTH_UPDATE:{NOTH_UPDATE: "Nothing to update"}
-}
+    NOTH_UPDATE:{NOTH_UPDATE: "Nothing to update"},
+    UNEXPECTED_ERROR:{UNEXPECTED_ERROR : "Unexpected Error"}
+})
 
 const createEmployeeResponses = (employee, employees) => {
     return {
